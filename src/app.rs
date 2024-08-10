@@ -361,17 +361,17 @@ impl App {
         let reviewed_patchsets: HashMap<String, Vec<u32>>;
         let config: Config = Config::build();
 
-        match lore_session::load_available_lists(&config.mailing_lists_path) {
+        match lore_session::load_available_lists(config.get_mailing_lists_path()) {
             Ok(vec_of_mailing_lists) => mailing_lists = vec_of_mailing_lists,
             Err(_) => mailing_lists = Vec::new(),
         }
 
-        match lore_session::load_bookmarked_patchsets(&config.bookmarked_patchsets_path) {
+        match lore_session::load_bookmarked_patchsets(config.get_bookmarked_patchsets_path()) {
             Ok(vec_of_patchsets) => bookmarked_patchsets = vec_of_patchsets,
             Err(_) => bookmarked_patchsets = Vec::new(),
         }
 
-        match lore_session::load_reviewed_patchsets(&config.reviewed_patchsets_path) {
+        match lore_session::load_reviewed_patchsets(config.get_reviewed_patchsets_path()) {
             Ok(vec_of_patchsets) => reviewed_patchsets = vec_of_patchsets,
             Err(_) => reviewed_patchsets = HashMap::new(),
         }
@@ -383,7 +383,7 @@ impl App {
                 target_list: String::new(),
                 possible_mailing_lists: mailing_lists,
                 highlighted_list_index: 0,
-                mailing_lists_path: config.mailing_lists_path.clone(),
+                mailing_lists_path: config.get_mailing_lists_path().to_string(),
             },
             latest_patchsets_state: None,
             patchset_details_and_actions_state: None,
@@ -398,7 +398,7 @@ impl App {
 
     pub fn init_latest_patchsets_state(self: &mut Self) {
         self.latest_patchsets_state = Some(
-            LatestPatchsetsState::new(self.mailing_list_selection_state.target_list.clone(), self.config.page_size)
+            LatestPatchsetsState::new(self.mailing_list_selection_state.target_list.clone(), self.config.get_page_size())
         );
     }
 
@@ -424,7 +424,7 @@ impl App {
             screen => bail!(format!("Invalid screen passed as argument {screen:?}"))
         };
 
-        match lore_session::download_patchset(&self.config.patchsets_cache_dir, &representative_patch) {
+        match lore_session::download_patchset(&self.config.get_patchsets_cache_dir(), &representative_patch) {
             Ok(result) => patchset_path = result,
             Err(io_error) => bail!("{io_error}"),
         }
@@ -470,7 +470,7 @@ impl App {
         }
 
         lore_session::save_bookmarked_patchsets(
-            &self.bookmarked_patchsets_state.bookmarked_patchsets, &self.config.bookmarked_patchsets_path
+            &self.bookmarked_patchsets_state.bookmarked_patchsets, &self.config.get_bookmarked_patchsets_path()
         )?;
 
         let should_reply_with_reviewed_by = *self
@@ -490,7 +490,7 @@ impl App {
 
                 lore_session::save_reviewed_patchsets(
                     &self.reviewed_patchsets,
-                    &self.config.reviewed_patchsets_path
+                    &self.config.get_reviewed_patchsets_path()
                 )?;
             }
 
